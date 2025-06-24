@@ -14,10 +14,24 @@ const app = express();
 const server = http.createServer(app); // Use native HTTP server for better socket integration
 
 // Middleware
+const allowedOrigins = [
+  "http://localhost:3000",
+  "https://chat-application-git-main-vishwas-projects-612ff6af.vercel.app"
+];
+
 app.use(cors({
-  origin: process.env.CLIENT_URL || "http://localhost:3000", // Configurable
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    } else {
+      return callback(new Error("Not allowed by CORS"));
+    }
+  },
   credentials: true,
 }));
+
 app.use(express.json());
 
 // MongoDB Connection
@@ -44,7 +58,7 @@ server.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
 // WebSocket Setup
 const io = new Server(server, {
   cors: {
-    origin: process.env.CLIENT_URL || "http://localhost:3000",
+    origin: allowedOrigins,
     credentials: true,
   },
 });
