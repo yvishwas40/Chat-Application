@@ -1,5 +1,4 @@
 const express = require("express");
-const cors = require("cors");
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const http = require("http");
@@ -11,26 +10,20 @@ const messageRoutes = require("./routes/messages");
 dotenv.config();
 
 const app = express();
-const server = http.createServer(app); // Use native HTTP server for better socket integration
+const server = http.createServer(app); // Use native HTTP server for socket integration
 
-// Middleware
-const allowedOrigins = [
-  "http://localhost:3000",
-  "https://chat-application-five-alpha.vercel.app/"
-];
+// ✅ Manual CORS Middleware – Allow All Origins (for dev)
+app.use((req, res, next) => {
+  res.setHeader("Access-Control-Allow-Origin", "*"); // Allow all origins
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(200);
+  }
 
-app.use(cors({
-  origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl)
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.includes(origin)) {
-      return callback(null, true);
-    } else {
-      return callback(new Error("Not allowed by CORS"));
-    }
-  },
-  credentials: true,
-}));
+  next();
+});
 
 app.use(express.json());
 
@@ -55,12 +48,10 @@ app.use("/api/messages", messageRoutes);
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
 
-
 // WebSocket Setup
 const io = new Server(server, {
   cors: {
-    origin: allowedOrigins,
-    credentials: true,
+    origin: "*", // ✅ Allow all origins
   },
 });
 
@@ -83,6 +74,5 @@ io.on("connection", (socket) => {
 
   socket.on("disconnect", () => {
     console.log("❎ User disconnected");
-    // You can optionally remove user from onlineUsers map
   });
 });
