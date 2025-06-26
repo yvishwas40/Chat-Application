@@ -16,7 +16,7 @@ const server = http.createServer(app); // Use native HTTP server for better sock
 // Middleware
 const allowedOrigins = [
   "http://localhost:3000",
-  "https://chat-application-git-main-vishwas-projects-612ff6af.vercel.app"
+  "https://chat-application-five-alpha.vercel.app/"
 ];
 
 app.use(cors({
